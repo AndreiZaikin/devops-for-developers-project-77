@@ -1,0 +1,20 @@
+---
+ansible_user: ubuntu
+redmine_port: 80
+redmine_db_adapter: postgresql
+redmine_db_host: "{{ redmine_db_host }}"
+redmine_db_port: 6432
+redmine_db_database: redmine
+redmine_db_username: redmine
+redmine_db_password: "{{ vault_redmine_db_password }}"
+secret_key_base: "{{ vault_secret_key_base }}"
+datadog_api_key: "{{ vault_datadog_api_key }}"
+datadog_site: "datadoghq.com"
+datadog_checks:
+  http_check:
+    init_config:
+    instances:
+      - name: Redmine
+        url: http://localhost:80
+        timeout: 5
+        collect_response_time: true

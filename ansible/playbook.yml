@@ -1,0 +1,68 @@
+---
+- name: Install Docker and pip
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/webservers/vars.yml
+
+  vars:
+    pip_install_packages:
+      - name: docker
+
+  roles:
+    - geerlingguy.pip
+    - geerlingguy.docker
+
+  tags:
+    - docker
+
+- name: Deploy Redmine
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/webservers/vars.yml
+
+  tasks:
+    - name: Create directory for Redmine
+      ansible.builtin.file:
+        path: /opt/redmine
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      tags:
+        - deploy
+
+    - name: Create .env file for Redmine
+      ansible.builtin.template:
+        src: templates/redmine.env.j2
+        dest: /opt/redmine/.env
+        owner: root
+        group: root
+        mode: '0600'
+      tags:
+        - deploy
+
+    - name: Run Redmine container
+      community.docker.docker_container:
+        name: redmine-server
+        image: redmine:5.1.3
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ redmine_port }}:3000"
+        env_file: /opt/redmine/.env
+      tags:
+        - deploy
+
+    - name: Setup DataDog agent
+      hosts: webservers
+      become: true
+      vars_files:
+        - group_vars/webservers/vars.yml
+
+      roles:
+        - datadog.datadog
+
+      tags:
+        - monitoring        

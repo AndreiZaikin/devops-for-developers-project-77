@@ -1,0 +1,9 @@
+---
+roles:
+  - name: geerlingguy.pip
+  - name: geerlingguy.docker
+    version: 7.4.0
+  - name: datadog.datadog
+
+collections:
+  - name: community.docker
